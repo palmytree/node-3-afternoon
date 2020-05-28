@@ -4,9 +4,12 @@ const express = require('express'),
 	massive = require('massive'),
 	ctrl = require('./product_controller'),
 	{ SERVER_PORT, CONNECTION_STRING } = process.env,
-	app = express()
+	app = express(),
+	path = require('path')
 
 app.use(express.json())
+app.use('/', express.static(path.join(__dirname, '../front-end/build')))
+// console.log(path.join(__dirname, '../front-end/build'))
 
 massive({
 	connectionString: CONNECTION_STRING,
