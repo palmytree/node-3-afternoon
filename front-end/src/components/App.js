@@ -1,23 +1,70 @@
 import React, { Component } from 'react'
 import axios from 'axios'
-import ProductRow from './ProductRow'
-import { Table, Container, Navbar, Button } from 'react-bootstrap'
+import AddForm from './AddForm'
+import EditProducts from './EditProducts'
+import ViewProducts from './ViewProducts'
+import { Container, Navbar, Button, Modal } from 'react-bootstrap'
+import { ToastContainer, toast } from 'react-toastify'
+
 // import '../style/reset.css'
-// import '../style/App.css'
+import '../style/App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import 'react-toastify/dist/ReactToastify.css'
 
 export default class App extends Component {
 	constructor() {
 		super()
 		this.state = {
-			products: []
+			products: [],
+			mounted: false,
+			addForm: false,
+			viewProd: false,
+			newName: '',
+			newPrice: '',
+			newDesc: '',
+			newImg: ''
 		}
+	}
+
+	toggleAddForm = () => {
+		this.setState({ addForm: !this.state.addForm })
+	}
+
+	updateNewProd = e => {
+		this.setState({ [e.target.id]: e.target.value })
+	}
+
+	toggleMount = () => {
+		this.setState({ mounted: !this.state.mounted })
+	}
+
+	toggleView = () => {
+		this.setState({ viewProd: !this.state.viewProd })
+	}
+
+	submitNewProd = () => {
+		const { newName, newPrice, newDesc, newImg } = this.state,
+			body = {
+				name: newName,
+				price: newPrice,
+				description: newDesc,
+				image_url: newImg
+			}
+
+		this.toggleAddForm()
+		axios
+			.post('/api/products', body)
+			.then(() => {
+				toast.success(`${newName} successfully added!`)
+				this.getProducts()
+			})
+			.catch(err => toast.error(`Uh oh! Error: ${err}`))
 	}
 
 	getProducts = () => {
 		axios
 			.get('/api/products')
-			.then(res => this.setState({ products: res.data }))
+			.then(res => this.setState({ products: res.data, mounted: true }))
 			.catch(err => console.log(err))
 	}
 
@@ -26,37 +73,44 @@ export default class App extends Component {
 	}
 
 	render() {
-		const { products } = this.state
+		const { products, mounted, addForm, viewProd } = this.state
 		return (
 			<Container fluid className='App'>
 				<Navbar bg='dark' variant='dark' className='App-header'>
 					<Navbar.Brand>Palmy's Products</Navbar.Brand>
-					<Button className='add-prod-btn'>Add</Button>
-				</Navbar>
-
-				<Table responsive className='prod-table'>
-					<thead className='prod-table-header-row'>
-						<tr>
-							<th className='prod-img-header'>Image</th>
-							<th className='prod-name-header'>Name</th>
-							<th className='prod-price-header'>Price</th>
-							<th className='prod-desc-header'>Desc</th>
-						</tr>
-					</thead>
-					<tbody>
-						{products.map((product, i) => (
-							<ProductRow
-								getProducts={this.getProducts}
-								product_id={product.product_id}
-								image_url={product.image_url}
-								name={product.name}
-								price={product.price}
-								description={product.description}
-								key={i}
+					<Button
+						className='add-prod-btn'
+						onClick={this.toggleAddForm}
+						aria-controls='add-prod-form'
+						aria-expanded={addForm}>
+						Add
+					</Button>
+					<Button onClick={this.toggleView}>Customer View</Button>
+					<Modal show={addForm} onHide={this.toggleAddForm} size='lg' centered>
+						<Modal.Header closeButton>
+							<Modal.Title>Add New Product</Modal.Title>
+						</Modal.Header>
+						<Modal.Body>
+							<AddForm
+								id='add-prod-form'
+								toggleForm={this.toggleAddForm}
+								updateNewProd={this.updateNewProd}
+								submitNewProd={this.submitNewProd}
 							/>
-						))}
-					</tbody>
-				</Table>
+						</Modal.Body>
+					</Modal>
+				</Navbar>
+				<ToastContainer />
+				{viewProd ? (
+					<ViewProducts products={products}/>
+				) : (
+					<EditProducts
+						products={products}
+						mounted={mounted}
+						getProducts={this.getProducts}
+						toggleMount={this.toggleMount}
+					/>
+				)}
 			</Container>
 		)
 	}
