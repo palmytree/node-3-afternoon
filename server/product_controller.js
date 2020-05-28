@@ -31,6 +31,15 @@ module.exports = {
 			.then(() => res.sendStatus(200))
 			.catch(err => res.status(500).send(err))
 	},
+	updateAll: (req, res) => {
+		const db = req.app.get('db'),
+			{ id } = req.params,
+			{ img, name, price, desc } = req.query
+
+		db.update_product_all(id, img, name, price, desc)
+			.then(() => res.sendStatus(200))
+			.catch(err => res.status(500).send(err))
+	},
 	delete: (req, res) => {
 		const db = req.app.get('db'),
 			{ id } = req.params

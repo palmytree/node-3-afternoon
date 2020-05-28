@@ -23,6 +23,7 @@ massive({
 app.get('/api/products', ctrl.getAll)
 app.get('/api/products/:id', ctrl.getOne)
 app.put('/api/products/:id', ctrl.update)
+app.put('/api/product/:id', ctrl.updateAll)
 app.post('/api/products', ctrl.create)
 app.delete('/api/products/:id', ctrl.delete)
 
